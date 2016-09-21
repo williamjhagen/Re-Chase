@@ -6,8 +6,13 @@ public class InputManager : MonoBehaviour {
     
     //ranges for reading movement inputs
     private float cStickMin = .6f;
-    private float lowRange = .2f;
-    private float highRange = .7f;
+    private float lowRange = .001f;
+    //different sensitivities for each direction
+    //gamecube controllers suck
+    private float highRangeRight = .7f;
+    private float highRangeLeft = .6f;
+    private float highRangeUp = .6f;
+    private float highRangeDown = .6f;
     [SerializeField]
     private Buffer buffer;
 
@@ -83,11 +88,11 @@ public class InputManager : MonoBehaviour {
     {
         //BUG: buttons not being read?
         //get action inputs
-        if (Input.GetButtonDown("Special")) buffer.RegisterInput(GameInput.Special);
-        if (Input.GetButtonDown("Attack")) buffer.RegisterInput(GameInput.Attack);
-        if (Input.GetButtonDown("Shield")) buffer.RegisterInput(GameInput.Shield);
-        if (Input.GetButtonDown("Grab")) buffer.RegisterInput(GameInput.Grab);
-        if (Input.GetButtonDown("Jump")) buffer.RegisterInput(GameInput.Jump);
+        if (Input.GetButtonDown("s")) buffer.RegisterInput(GameInput.Special);
+        if (Input.GetButtonDown("a")) buffer.RegisterInput(GameInput.Attack);
+        if (Input.GetButtonDown("s")) buffer.RegisterInput(GameInput.Shield);
+        if (Input.GetButtonDown("z")) buffer.RegisterInput(GameInput.Grab);
+        if (Input.GetButtonDown("jump")) buffer.RegisterInput(GameInput.Jump);
         //c stick inputs
         if (Input.GetAxis("C Horizontal") > cStickMin)
         {
@@ -112,22 +117,21 @@ public class InputManager : MonoBehaviour {
         /* movement controls are more complicated, and differ depending on keyboard vs joystick
          * see individual comments for details on implementations
          */
-        if (Input.GetAxis("Vertical") > lowRange && Input.GetAxis("Vertical") < highRange)
+        if (Input.GetAxis("Vertical") > lowRange && Input.GetAxis("Vertical") < highRangeUp)
             buffer.RegisterInput(GameInput.SoftUp);
-        if (Input.GetAxis("Vertical") > highRange)
+        if (Input.GetAxis("Vertical") > highRangeUp)
             buffer.RegisterInput(GameInput.HardUp);
-        if (Input.GetAxis("Vertical") < -lowRange && Input.GetAxis("Vertical") > -highRange)
+        if (Input.GetAxis("Vertical") < -lowRange && Input.GetAxis("Vertical") > -highRangeLeft)
             buffer.RegisterInput(GameInput.SoftDown);
-        if (Input.GetAxis("Vertical") < -highRange)
+        if (Input.GetAxis("Vertical") < -highRangeDown)
             buffer.RegisterInput(GameInput.HardDown);
-
-        if (Input.GetAxis("Horizontal") > lowRange && Input.GetAxis("Horizontal") < highRange)
+        if (Input.GetAxis("Horizontal") > lowRange && Input.GetAxis("Horizontal") < highRangeRight)
             buffer.RegisterInput(GameInput.SoftRight);
-        if (Input.GetAxis("Horizontal") > highRange)
+        if (Input.GetAxis("Horizontal") > highRangeRight)
             buffer.RegisterInput(GameInput.HardRight);
-        if (Input.GetAxis("Horizontal") < -lowRange && Input.GetAxis("Horizontal") > -highRange)
+        if (Input.GetAxis("Horizontal") < -lowRange && Input.GetAxis("Horizontal") > -highRangeLeft) 
             buffer.RegisterInput(GameInput.SoftLeft);
-        if (Input.GetAxis("Horizontal") < -highRange)
+        if (Input.GetAxis("Horizontal") < -highRangeLeft)
             buffer.RegisterInput(GameInput.HardLeft);
         //TODO: Dpad?
     }

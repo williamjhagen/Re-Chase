@@ -7,7 +7,7 @@ public abstract class Action{
     //the character using this action
     protected Character character;
     protected List<GameInput> inputs;
-
+    protected string name;
     public Action(Character character)
     {
         this.character = character;
@@ -42,6 +42,11 @@ public abstract class Action{
     /// </summary>
     /// <returns></returns>
     public abstract bool IsValid();
+
+    /// <summary>
+    /// returns name, used to sync with animation system
+    /// </summary>
+    public string Name { get { return name; } }
 
     /// <summary>
     /// return a list of inputs required for a player to execute this action

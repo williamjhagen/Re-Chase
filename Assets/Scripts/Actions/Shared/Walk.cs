@@ -5,12 +5,17 @@ using System;
 
 public class Walk : Action {
 
-    public Walk(Character character) : base(character) { }
+
+    Direction facing;
+
+    public Walk(Character character, Direction dir) : base(character) { facing = dir; }
 
     public override void Begin()
     {
         inputs = new List<GameInput>();
         inputs.Add(GameInput.SoftRight);
+        character.Direction = facing;
+        
     }
 
     /// <summary>
@@ -22,8 +27,8 @@ public class Walk : Action {
         Vector3 position  = new Vector3(character.transform.position.x, character.transform.position. y, character.transform.position.z);
         position.x = position.x + (character.WalkSpeed * Time.deltaTime) * (character.Direction == Direction.Left ? -1f : 1f);
         character.transform.position = position;
-        //always return true
-        return true;
+        //always return false
+        return false;
     }
 
     public override bool IsValid()

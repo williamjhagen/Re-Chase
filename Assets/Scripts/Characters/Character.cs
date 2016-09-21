@@ -9,6 +9,8 @@ public abstract class Character : MonoBehaviour{
     #region Variables
     //attached components that will be used later
     SpriteRenderer spriteRenderer;
+    //the controller that handle sprite animation
+    SpriteController spriteController;
     //various states governing what is happening to the character
     protected Direction direction;
     protected State state;
@@ -22,6 +24,9 @@ public abstract class Character : MonoBehaviour{
     protected Dictionary<string, Action> availableActions;
     //the action currently being run by the character
     protected Action currentAction;
+    //the name of the animation currently being played
+    //passed to the spriteController to begin the animation
+    protected string currentAnimationName;
 
     //health
     [SerializeField]
@@ -55,11 +60,11 @@ public abstract class Character : MonoBehaviour{
     public void Start()
     {
         spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        spriteController = GetComponentInChildren<SpriteController>();
         actions = new Dictionary<string, Action>();
         availableActions = new Dictionary<string, Action>();
         PopulateActions();
         Init();
-        Debug.Log("char");
     }
     protected void Init()
     {
@@ -86,10 +91,15 @@ public abstract class Character : MonoBehaviour{
         yield return new WaitForSeconds(1);
         while (true)
         {
-            System.Console.WriteLine(currentAction);
             if(!currentAction.Run())
             {
-                currentAction = GetAction();
+                Action newAction = GetAction();
+                if (newAction != currentAction)
+                {
+                    currentAction = newAction;
+                    spriteController.PlayAnimation(currentAnimationName);
+                    currentAction.Begin();
+                }
             }
             yield return null;
         }
@@ -144,7 +154,7 @@ public abstract class Character : MonoBehaviour{
     /// <param name="action"></param>
     protected void AddAction(string key, Action action)
     {
-        actions[key] = action;
+        actions[key] = action; 
     }
     /// <summary>
     /// Figure out what action needs to be run
@@ -153,7 +163,7 @@ public abstract class Character : MonoBehaviour{
     /// </summary>
     /// <returns></returns>
     abstract protected Action GetAction();
-
+    
     /// <summary>
     /// Children are responsible for handling which actions they have access too
     /// </summary>
@@ -241,6 +251,7 @@ public abstract class Character : MonoBehaviour{
         get { return spriteRenderer.flipX ? Direction.Left : Direction.Right; }
         set
         {
+            direction = value;
             if (value == Direction.Left) spriteRenderer.flipX = true;
             else if (value == Direction.Right) spriteRenderer.flipX = false;
         }

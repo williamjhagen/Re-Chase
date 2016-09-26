@@ -41,6 +41,8 @@ public abstract class Character : MonoBehaviour{
     [SerializeField]
     private float jumpHeight;
     [SerializeField]
+    private float jumpSpeed;
+    [SerializeField]
     private float fallSpeed;
     [SerializeField]
     private float airSpeed;
@@ -263,6 +265,10 @@ public abstract class Character : MonoBehaviour{
         {
             return positionState;
         }
+        set
+        {
+            positionState = value;
+        }
     }
 
     public VulnState VulnState
@@ -271,6 +277,10 @@ public abstract class Character : MonoBehaviour{
         {
             return vulnState;
         }
+        set
+        {
+            vulnState = value;
+        }
     }
 
     public State State
@@ -278,6 +288,10 @@ public abstract class Character : MonoBehaviour{
         get
         {
             return state;
+        }
+        set
+        {
+            state = value;
         }
     }
 

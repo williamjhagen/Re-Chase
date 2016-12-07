@@ -1,29 +1,28 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 
-/// <summary>
-/// literally do nothing.
-/// Used for grounded
-/// Used so there is always an action running
-/// </summary>
-public class Idle : Action
-{
-    public Idle(Character character) : base(character) { }
+public class Attack : AttackAction {
+
+    public Attack(Character character) : base(character) { }
+    int frame = 0;
 
     public override void Begin()
     {
+        character.State = State.Attacking;
+        frame = 0;
     }
 
     public override void Finish()
     {
-        return;
+        character.State = State.Free;
     }
 
     public override void Interupt()
     {
-        Finish();
+        frame = 50;
+        Debug.Log("?");
     }
 
     public override bool IsValid()
@@ -33,11 +32,18 @@ public class Idle : Action
 
     public override bool Run()
     {
-        return false;
+        ++frame;
+        if (frame < 50) return true;
+        else
+        {
+            Finish();
+            return false;
+        }
     }
 
     protected override void PopulateChanges()
     {
         changes = new List<WorldStateChange>();
+        changes.Add(WorldStateChange.AttackClose);
     }
 }

@@ -4,7 +4,7 @@ using System.Collections;
 public class SpriteAnimation : MonoBehaviour {
     
     [SerializeField]
-    private float speed= .1f;
+    private float length= .1f;
     
     [SerializeField]
     private bool shouldLoop = false;
@@ -17,7 +17,7 @@ public class SpriteAnimation : MonoBehaviour {
     Character parent;
 
     // Use this for initialization
-    void Start () {
+    void Awake () {
         parent = this.gameObject.GetComponentInParent<Character>();
 	}
 	
@@ -36,9 +36,9 @@ public class SpriteAnimation : MonoBehaviour {
         {
             parent.GetComponentInChildren<SpriteRenderer>().sprite = sprites[ii % len];
             timer += Time.deltaTime;
-            if (timer > speed)
+            if (timer > length)
             {
-                timer -= speed;
+                timer -= length;
                 ++ii;
             }
             yield return null;

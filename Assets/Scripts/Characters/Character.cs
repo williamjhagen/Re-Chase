@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 /// <summary>
 /// Model for all acting characters
 /// </summary>
@@ -39,11 +40,13 @@ public abstract class Character : MonoBehaviour{
     [SerializeField]
     private float runSpeed;
     [SerializeField]
-    private float jumpHeight;
+    private float jumpLength;
     [SerializeField]
     private float jumpSpeed;
     [SerializeField]
     private float fallSpeed;
+    [NonSerialized]
+    public bool fastFalling = false;
     [SerializeField]
     private float airSpeed;
     [SerializeField]
@@ -53,9 +56,10 @@ public abstract class Character : MonoBehaviour{
     private float speedModifier = 1;
     [SerializeField]
     private int numAirJumps = 1;
-    private int jumpsRemaining;
+    public int jumpsRemaining;
     //TODO: Adjust knockback via percent?
     private int percent;
+    private Vector2 velocity;
     #endregion
 
     #region Init
@@ -78,7 +82,9 @@ public abstract class Character : MonoBehaviour{
         positionState = PositionState.Grounded;
         UpdateAvailableActions();
         currentAction = GetAction();
+        velocity = new Vector2();
         StartCoroutine("Act");
+        StartCoroutine("AerialMovement");
     }
     #endregion
 
@@ -89,20 +95,51 @@ public abstract class Character : MonoBehaviour{
     /// </summary>
     protected IEnumerator Act()
     {
-        //let the player orient before things happen
         yield return new WaitForSeconds(1);
         while (true)
         {
             if(!currentAction.Run())
             {
                 Action newAction = GetAction();
-                if (newAction != currentAction)
+                if (newAction != null)
                 {
+                    if (newAction != currentAction)
+                        spriteController.PlayAnimation(currentAnimationName);
                     currentAction = newAction;
-                    spriteController.PlayAnimation(currentAnimationName);
                     currentAction.Begin();
+                    ActionSelected();
                 }
             }
+            yield return null;
+        }
+    }
+
+    /// <summary>
+    /// handles how the character moves in the air
+    /// whether they jumped or were hit
+    /// </summary>
+    /// <returns></returns>
+    protected IEnumerator AerialMovement()
+    {
+        while(true)
+        {
+            if(positionState == PositionState.Aerial)
+            {
+                Vector2  di = GetDI();
+                di.y = 0;
+                Vector2 temp = transform.position;
+                ///di
+                //Debug.Log(di * airSpeed * Time.deltaTime);
+                velocity += di * airSpeed * Time.deltaTime;
+                //gravity
+                velocity.y -= FallSpeed * Time.deltaTime;
+
+                velocity *= .9f;
+
+                temp += velocity;
+                transform.position = temp;
+            }
+            if(state != State.Dodge && currentAction.GetType() != typeof(Attack)) CheckGrounded();
             yield return null;
         }
     }
@@ -144,10 +181,44 @@ public abstract class Character : MonoBehaviour{
     /// raycast down to check if the character is standing on the ground
     /// </summary>
     /// <returns>whether or not the character is standing</returns>
-    public bool CheckGrounded()
+    public void CheckGrounded()
     {
-        //TODO: check if character is grounded
-        return true;
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector3.down, 1.2f);
+        if(hit.point != Vector2.zero)
+        {
+            positionState = PositionState.Grounded;
+            jumpsRemaining = numAirJumps;
+            Vector2 temp = transform.position;
+            temp.y = hit.point.y + 1.2f;
+            transform.position = temp;
+            fastFalling = false;
+            if (currentAction.IsValid() == false) currentAction.Interupt();
+        }
+        else if(positionState == PositionState.Grounded && state == State.Free)
+        {
+            positionState = PositionState.Aerial;
+        }
+
+    }
+
+    /// <summary>
+    /// Can be used to initiate fast falling, knockback, etc
+    /// </summary>
+    /// <param name="force">the force vector</param>
+    /// <param name="knockback">If it is a knockback, account for percent damage</param>
+    public void ApplyForce(Vector2 force, bool knockback = false)
+    {
+        //TODO: percent based knockback
+        velocity.y += force.y;
+        velocity.x += force.x;
+    }
+
+    /// <summary>
+    /// stops vertical momentum, used primarily for double jumping
+    /// </summary>
+    public void ClearForceVertical()
+    {
+        velocity.y = 0;
     }
 
     /// <summary>
@@ -158,6 +229,12 @@ public abstract class Character : MonoBehaviour{
     {
         actions[key] = action; 
     }
+
+    /// <summary>
+    /// event fired to children to say an action was successfully ran
+    /// </summary>
+    abstract protected void ActionSelected();
+
     /// <summary>
     /// Figure out what action needs to be run
     /// NPCS will rely on an NPC manager
@@ -165,7 +242,14 @@ public abstract class Character : MonoBehaviour{
     /// </summary>
     /// <returns></returns>
     abstract protected Action GetAction();
-    
+
+    /// <summary>
+    /// The player can always have directional influence
+    /// determine what this should be
+    /// </summary>
+    /// <returns>A vector 2 representing the direction the character move</returns>
+    abstract protected Vector2 GetDI();
+
     /// <summary>
     /// Children are responsible for handling which actions they have access too
     /// </summary>
@@ -200,11 +284,11 @@ public abstract class Character : MonoBehaviour{
         }
     }
 
-    public float JumpHeight
+    public float JumpLength
     {
         get
         {
-            return jumpHeight;
+            return jumpLength;
         }
     }
 
@@ -212,7 +296,7 @@ public abstract class Character : MonoBehaviour{
     {
         get
         {
-            return fallSpeed;
+            return fastFalling ? fallSpeed * 2 : fallSpeed;
         }
     }
 
@@ -295,6 +379,15 @@ public abstract class Character : MonoBehaviour{
         }
     }
 
+    public float JumpSpeed
+    {
+        get
+        {
+            return jumpSpeed;
+        }
+        
+    }
+
     #endregion
 
 
@@ -325,6 +418,7 @@ public enum PositionState
 {
     Grounded,
     Aerial,
+    Ascending,
     InVehicle
 }
 
@@ -349,5 +443,15 @@ public enum VulnState
     Armored
 }
 
+
+public enum WorldStateChange
+{
+    MoveLeft,
+    MoveRight,
+    MoveDown,
+    MoveUp,
+    AttackClose,
+    AttackFar,
+}
 #endregion
 

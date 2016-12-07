@@ -3,17 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
-public class Walk : Action {
-
+class Dash : Action
+{ 
 
     Direction facing;
+    int frame = 0;
 
-    public Walk(Character character, Direction dir) : base(character) { facing = dir; }
+    public Dash(Character character, Direction dir) : base(character) { facing = dir; }
 
     public override void Begin()
     {
-        character.Direction = facing;
-        
+        character.Direction = Facing;
+        frame = 0;
     }
 
     /// <summary>
@@ -22,11 +23,12 @@ public class Walk : Action {
     /// <returns>always false</returns>
     public override bool Run()
     {
-        Vector3 position  = new Vector3(character.transform.position.x, character.transform.position. y, character.transform.position.z);
-        position.x = position.x + (character.WalkSpeed * Time.deltaTime) * (character.Direction == Direction.Left ? -1f : 1f);
+        ++frame;
+        Vector3 position = new Vector3(character.transform.position.x, character.transform.position.y, character.transform.position.z);
+        position.x = position.x + (character.RunSpeed * Time.deltaTime) * (character.Direction == Direction.Left ? -1f : 1f);
         character.transform.position = position;
-        //always return false
-        return false;
+        
+        return frame < 5;
     }
 
     public override bool IsValid()
@@ -39,6 +41,7 @@ public class Walk : Action {
     /// </summary>
     public override void Finish()
     {
+        frame = 0;
         return;
     }
     public override void Interupt()
@@ -51,6 +54,7 @@ public class Walk : Action {
         changes = new List<WorldStateChange>();
         changes.Add(facing == Direction.Left ? WorldStateChange.MoveLeft : WorldStateChange.MoveRight);
     }
+
 
     public Direction Facing
     {

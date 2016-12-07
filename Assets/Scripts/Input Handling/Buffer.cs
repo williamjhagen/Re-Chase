@@ -16,7 +16,7 @@ public class Buffer : MonoBehaviour
     /// </summary>
     private List<InputPair> buffer;
 
-    public void Start()
+    public void Awake()
     {
         buffer = new List<InputPair>();
         StartCoroutine("CleanBuffer");
@@ -33,6 +33,11 @@ public class Buffer : MonoBehaviour
             //cya next frame nerds
             yield return null;
         }
+    }
+
+    public void ClearBuffer()
+    {
+        buffer.Clear();
     }
 
     public void RegisterInput(GameInput input)

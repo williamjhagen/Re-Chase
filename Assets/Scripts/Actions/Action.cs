@@ -6,8 +6,9 @@ using UnityEngine.Assertions;
 public abstract class Action{
     //the character using this action
     protected Character character;
-    protected List<GameInput> inputs;
     protected string name;
+    protected List<WorldStateChange> changes;
+
     public Action(Character character)
     {
         this.character = character;
@@ -23,7 +24,7 @@ public abstract class Action{
     /// The primary running code for the action
     /// updates hitboxes / hurtboxes, etc.
     /// </summary>
-    /// <returns>returns true if the action has successfully completed</returns>
+    /// <returns>returns true if the action is running</returns>
     public abstract bool Run();
 
     /// <summary>
@@ -44,16 +45,23 @@ public abstract class Action{
     public abstract bool IsValid();
 
     /// <summary>
+    ///  
+    /// </summary>
+    /// <returns>a list of changes to the world state</returns>
+    public List<WorldStateChange> StateChange()
+    {
+        if (changes == null) PopulateChanges();
+        return changes;
+    }
+
+    /// <summary>
+    /// only called once, populates the action's changes to the world state
+    /// </summary>
+    protected abstract void PopulateChanges();
+
+    /// <summary>
     /// returns name, used to sync with animation system
     /// </summary>
     public string Name { get { return name; } }
 
-    /// <summary>
-    /// return a list of inputs required for a player to execute this action
-    /// null implies the player can't initiate the action
-    /// </summary>
-    public List<GameInput> GetInputs()
-    {
-        return new List<GameInput>(inputs);
-    }
 }

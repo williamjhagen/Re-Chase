@@ -4,7 +4,7 @@ using System.Collections;
 public class SpriteController : MonoBehaviour {
     SpriteAnimation[] animations;
     SpriteAnimation currentAnimation;
-    void Start()
+    void Awake()
     {
         animations = GetComponentsInChildren<SpriteAnimation>();
         //default to the first animation in the list

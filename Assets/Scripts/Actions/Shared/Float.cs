@@ -5,12 +5,12 @@ using System;
 
 /// <summary>
 /// literally do nothing.
-/// Used for grounded
+/// Used for aerial
 /// Used so there is always an action running
 /// </summary>
-public class Idle : Action
+public class Float : Action
 {
-    public Idle(Character character) : base(character) { }
+    public Float(Character character) : base(character) { }
 
     public override void Begin()
     {
@@ -28,7 +28,7 @@ public class Idle : Action
 
     public override bool IsValid()
     {
-        return character.State == State.Free && character.PositionState == PositionState.Grounded;
+        return character.State == State.Free && character.PositionState == PositionState.Aerial;
     }
 
     public override bool Run()

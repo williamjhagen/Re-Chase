@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 public class InputManager : MonoBehaviour {
 
-    
+
     //ranges for reading movement inputs
     private float cStickMin = .6f;
     private float lowRange = .001f;
@@ -16,23 +16,16 @@ public class InputManager : MonoBehaviour {
     [SerializeField]
     private Buffer buffer;
 
-    public bool DoAction(Action action)
-    {
-        
-        return false;
-
-    }
-
     public GameInput GetActionOption()
     {
-        int len = buffer.Count;
         //readability over efficiency
         //buffer should be short given human limits
         if (buffer.Contains(GameInput.Special)) return GameInput.Special;
         if (buffer.Contains(GameInput.Attack)) return GameInput.Attack;
         if (buffer.Contains(GameInput.Jump)) return GameInput.Jump;
         if (buffer.Contains(GameInput.Grab)) return GameInput.Grab;
-        if (buffer.Contains(GameInput.Shield)) return GameInput.Shield;
+        if (buffer.Contains(GameInput.R)) return GameInput.R;
+        if (buffer.Contains(GameInput.L)) return GameInput.L;
 
         return GameInput.None;
     }
@@ -53,30 +46,30 @@ public class InputManager : MonoBehaviour {
         return GameInput.None;
     }
 
-    public List<GameInput> GetPossibleInputs(CharacterContext context)
+    /// <summary>
+    /// the only accessor outside classes have to the buffer
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns>whether the input is in the buffer</returns>
+    public bool InputInBuffer(GameInput input)
     {
-        List<GameInput> ret = new List<GameInput>();
-
-        if (context.state == State.Free)
-        {
-            ret.Add(GameInput.Special);
-            ret.Add(GameInput.Attack);
-            ret.Add(GameInput.Shield);
-
-            if (context.posState == PositionState.Grounded)
-            {
-                ret.Add(GameInput.Grab);
-            }
-            else if (context.posState == PositionState.Aerial)
-            {
-                if (context.remainingJumps > 0)
-                {
-                    ret.Add(GameInput.Jump);
-                }
-            }
-        }
-        return ret;
+        return buffer.Contains(input);
     }
+
+
+    /// <summary>
+    /// the buffer should be cleared after an action is selected
+    /// </summary>
+    public void ClearBuffer()
+    {
+        buffer.ClearBuffer();
+    }
+
+    public Vector2 GetCurrentJoystick()
+    {
+        return new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+    }
+
     /// <summary>
     /// read inputs once per frame
     /// this is update instead of a coroutine because we want it called before inputs are processed
@@ -88,11 +81,12 @@ public class InputManager : MonoBehaviour {
     {
         //BUG: buttons not being read?
         //get action inputs
-        if (Input.GetButtonDown("s")) buffer.RegisterInput(GameInput.Special);
+        if (Input.GetButtonDown("b")) buffer.RegisterInput(GameInput.Special);
         if (Input.GetButtonDown("a")) buffer.RegisterInput(GameInput.Attack);
-        if (Input.GetButtonDown("s")) buffer.RegisterInput(GameInput.Shield);
+        if (Input.GetButtonDown("l")) buffer.RegisterInput(GameInput.L);
+        if (Input.GetButtonDown("r")) buffer.RegisterInput(GameInput.R);
         if (Input.GetButtonDown("z")) buffer.RegisterInput(GameInput.Grab);
-        if (Input.GetButtonDown("jump")) buffer.RegisterInput(GameInput.Jump);
+        if (Input.GetButtonDown("j")) buffer.RegisterInput(GameInput.Jump);
         //c stick inputs
         if (Input.GetAxis("C Horizontal") > cStickMin)
         {
@@ -182,7 +176,8 @@ public enum GameInput
     None,
     Attack,
     Special,
-    Shield,
+    L,
+    R,
     Grab,
     Jump,
     SoftUp,
@@ -193,4 +188,5 @@ public enum GameInput
     SoftRight,
     HardRight,
     HardLeft,
+    AnyMovement
 }
